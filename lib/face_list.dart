@@ -27,7 +27,6 @@ class _FaceListPageState extends State<FaceListPage> with WidgetsBindingObserver
     super.dispose();
   }
 
-  // Được gọi khi app resume từ background hoặc quay lại từ màn hình khác
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
@@ -44,7 +43,7 @@ class _FaceListPageState extends State<FaceListPage> with WidgetsBindingObserver
       final response = await supabase
           .from('face')
           .select()
-          .order('created_at', ascending: false); // Mới nhất lên đầu
+          .order('created_at', ascending: false);
 
       if (mounted) {
         setState(() {
@@ -73,17 +72,109 @@ class _FaceListPageState extends State<FaceListPage> with WidgetsBindingObserver
     }
   }
 
+  Future<void> _deleteFace(Map<String, dynamic> face) async {
+    // Show confirmation dialog
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Xác nhận xóa'),
+          content: Text('Bạn có chắc muốn xóa ${face['name']}?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Hủy'),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            TextButton(
+              child: const Text('Xóa', style: TextStyle(color: Colors.red)),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    try {
+      // Show loading indicator
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      // Delete images from storage
+      final folderPath = face['name'];
+      try {
+        final List<FileObject> files = await supabase.storage
+            .from('face')
+            .list(path: folderPath);
+
+        // Delete each file in the folder
+        for (var file in files) {
+          await supabase.storage
+              .from('face')
+              .remove(['$folderPath/${file.name}']);
+        }
+
+        // Remove the empty folder
+        await supabase.storage
+            .from('face')
+            .remove([folderPath]);
+      } catch (e) {
+        // If folder/files don't exist, continue with database deletion
+        debugPrint('Storage cleanup error: $e');
+      }
+
+      // Delete record from database
+      await supabase
+          .from('face')
+          .delete()
+          .match({'id': face['id']});
+
+      if (mounted) {
+        // Remove loading indicator
+        Navigator.of(context).pop();
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã xóa thành công'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Refresh the list
+        _fetchFaces();
+      }
+    } catch (error) {
+      if (mounted) {
+        // Remove loading indicator
+        Navigator.of(context).pop();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi xóa: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   void _navigateToAddFace() async {
-    // Push và đợi kết quả từ màn hình thêm mặt
     final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const AddFaceStepsPage()),
     );
 
-    // Nếu thêm thành công, load lại danh sách
     if (result == true && mounted) {
       _fetchFaces();
-      // Hiện thông báo thành công
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Thêm người quen thành công!'),
@@ -109,7 +200,6 @@ class _FaceListPageState extends State<FaceListPage> with WidgetsBindingObserver
                     itemCount: faces.length,
                     itemBuilder: (context, index) {
                       final face = faces[index];
-                      // Format ngày giờ cho đẹp
                       final createdAt = DateTime.parse(face['created_at']);
                       final formattedDate = 
                           '${createdAt.day}/${createdAt.month}/${createdAt.year} ${createdAt.hour}:${createdAt.minute}';
@@ -128,6 +218,10 @@ class _FaceListPageState extends State<FaceListPage> with WidgetsBindingObserver
                         subtitle: Text(
                           'Đã thêm: $formattedDate',
                           style: const TextStyle(fontSize: 14),
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _deleteFace(face),
                         ),
                       );
                     },

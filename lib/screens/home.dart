@@ -22,12 +22,22 @@ class HomePage extends StatelessWidget {
       drawer: Drawer(
         child: ListView(
           children: [
-            const DrawerHeader(
-              child: Text('Menu'),
+            const ListTile(
+              title: Text(
+                'Menu',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold
+                ),
+              )
             ),
             ListTile(
               title: const Text('Danh sách người quen'),
               onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              title: const Text('Lịch sử ra vào'),
+              //onTap: () => ,
             ),
             ListTile(
               title: const Text('Đăng xuất'),
