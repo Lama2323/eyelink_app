@@ -1,5 +1,43 @@
-# eye_link_app
+# Eyelink: Ứng dụng quản lý người quen và nhật ký truy cập
 
-A new Flutter project.
-=======
-# eyelink_app
+**Giới thiệu:**
+
+Eyelink là một ứng dụng Flutter giúp quản lý danh sách người quen và theo dõi nhật ký truy cập được ghi nhận từ hệ thống camera.  Ứng dụng cung cấp giao diện thân thiện, dễ sử dụng để thêm, xem và quản lý thông tin người quen, đồng thời hiển thị lịch sử truy cập.
+
+**Chức năng chính:**
+
+* **Quản lý danh sách người quen:** Thêm, xóa thông tin người quen
+* **Hiển thị nhật ký truy cập:** Hiển thị danh sách các lần nhận diện khuôn mặt từ hệ thống camera, bao gồm thời gian và thông tin người được nhận diện.
+* **Thêm người quen vào cơ sở dữ liệu:**  Cho phép người dùng thêm thông tin người quen mới vào cơ sở dữ liệu của ứng dụng.
+
+
+**Hướng dẫn cài đặt và chạy:**
+
+1. **Yêu cầu:**
+    * Flutter SDK đã được cài đặt và cấu hình.
+    * Một trình giả lập Android hoặc thiết bị thực(hiện tại app chỉ chạy được trên Android).
+    * Kết nối với cơ sở dữ liệu Supabase
+
+2. **Clone repository:**
+
+   ```bash
+   git clone <địa chỉ_repository_git>
+   ```
+
+3. **Cài đặt dependencies:**
+
+   ```bash
+   cd <tên_thư_mục_project>
+   flutter pub get
+   ```
+
+4. **Chạy ứng dụng:**
+
+   ```bash
+   flutter run
+   ```
+
+
+**Ghi chú:**
+
+*  Ứng dụng yêu cầu kết nối internet để truy cập cơ sở dữ liệu và có thể cần thêm các quyền truy cập (ví dụ: quyền truy cập camera).
