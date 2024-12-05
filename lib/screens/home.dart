@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../face_list.dart';
+import 'face_list.dart';
 import 'authentication.dart';
+import 'access_log_page.dart';
 
 class HomePage extends StatelessWidget {
   final supabase = Supabase.instance.client;
@@ -36,8 +37,11 @@ class HomePage extends StatelessWidget {
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              title: const Text('Lịch sử ra vào'),
-              //onTap: () => ,
+              title: const Text('Lịch sử nhận diện'),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AccessLogPage())
+              ),
             ),
             ListTile(
               title: const Text('Đăng xuất'),
