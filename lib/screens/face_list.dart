@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'add_face_steps.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class FaceListPage extends StatefulWidget {
   const FaceListPage({super.key});
@@ -9,7 +10,8 @@ class FaceListPage extends StatefulWidget {
   _FaceListPageState createState() => _FaceListPageState();
 }
 
-class _FaceListPageState extends State<FaceListPage> with WidgetsBindingObserver {
+class _FaceListPageState extends State<FaceListPage>
+    with WidgetsBindingObserver {
   final supabase = Supabase.instance.client;
   List<Map<String, dynamic>> faces = [];
   bool isLoading = true;
@@ -47,7 +49,8 @@ class _FaceListPageState extends State<FaceListPage> with WidgetsBindingObserver
 
       if (mounted) {
         setState(() {
-          faces = (response as List).map((item) => item as Map<String, dynamic>).toList();
+          faces =
+              (response as List).map((item) => item as Map<String, dynamic>).toList();
           isLoading = false;
         });
       }
@@ -73,7 +76,6 @@ class _FaceListPageState extends State<FaceListPage> with WidgetsBindingObserver
   }
 
   Future<void> _deleteFace(Map<String, dynamic> face) async {
-    // Show confirmation dialog
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -97,7 +99,6 @@ class _FaceListPageState extends State<FaceListPage> with WidgetsBindingObserver
     if (confirm != true) return;
 
     try {
-      // Show loading indicator
       if (mounted) {
         showDialog(
           context: context,
@@ -108,55 +109,41 @@ class _FaceListPageState extends State<FaceListPage> with WidgetsBindingObserver
         );
       }
 
-      // Delete images from storage
       final folderPath = face['name'];
       try {
         final List<FileObject> files = await supabase.storage
             .from('face')
             .list(path: folderPath);
-
-        // Delete each file in the folder
         for (var file in files) {
           await supabase.storage
               .from('face')
               .remove(['$folderPath/${file.name}']);
         }
-
-        // Remove the empty folder
         await supabase.storage
             .from('face')
             .remove([folderPath]);
       } catch (e) {
-        // If folder/files don't exist, continue with database deletion
         debugPrint('Storage cleanup error: $e');
       }
 
-      // Delete record from database
       await supabase
           .from('face')
           .delete()
           .match({'id': face['id']});
 
       if (mounted) {
-        // Remove loading indicator
         Navigator.of(context).pop();
-        
-        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Đã xóa thành công'),
             backgroundColor: Colors.green,
           ),
         );
-        
-        // Refresh the list
         _fetchFaces();
       }
     } catch (error) {
       if (mounted) {
-        // Remove loading indicator
         Navigator.of(context).pop();
-        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi khi xóa: $error'),
@@ -193,36 +180,62 @@ class _FaceListPageState extends State<FaceListPage> with WidgetsBindingObserver
             ? const Center(child: CircularProgressIndicator())
             : faces.isEmpty
                 ? const Center(
-                    child: Text('Chưa có người quen nào', 
-                      style: TextStyle(fontSize: 16)),
+                    child: Text('Chưa có người quen nào',
+                        style: TextStyle(fontSize: 16)),
                   )
                 : ListView.builder(
                     itemCount: faces.length,
                     itemBuilder: (context, index) {
                       final face = faces[index];
                       final createdAt = DateTime.parse(face['created_at']);
-                      final formattedDate = 
-                          '${createdAt.day}/${createdAt.month}/${createdAt.year} ${createdAt.hour}:${createdAt.minute}';
-                      
-                      return ListTile(
-                        leading: const CircleAvatar(
-                          child: Icon(Icons.person),
-                        ),
-                        title: Text(
-                          face['name'] ?? '',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Đã thêm: $formattedDate',
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _deleteFace(face),
-                        ),
+                      final timeAgo = timeago.format(createdAt, locale: 'vi');
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0, vertical: 4.0),
+                        child: Card(
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ListTile(
+                                leading: Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.grey, // Màu nền mặc định
+                                    ),
+                                    child: const Icon(
+                                        Icons.person,
+                                        color: Colors.white
+                                    )
+                                ),
+                                title: Text(
+                                  face['name'] ?? '',
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(height: 4),
+                                    Text(
+                                      'Đã thêm: $timeAgo',
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
+                                  onPressed: () => _deleteFace(face),
+                                ),
+                              ),
+                            )),
                       );
                     },
                   ),

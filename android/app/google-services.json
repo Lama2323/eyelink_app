@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "219040526781",
+    "project_id": "eyelink-40f63",
+    "storage_bucket": "eyelink-40f63.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:219040526781:android:1d7f23b9e18b8cf2fde2d4",
+        "android_client_info": {
+          "package_name": "com.example.eye_link_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAveeepIoFAwngsLbkf-212CEB_TQJW3SM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

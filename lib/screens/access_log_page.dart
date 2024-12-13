@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
+import 'detail_log_page.dart';
 
 class AccessLogPage extends StatefulWidget {
   const AccessLogPage({super.key});
@@ -183,13 +184,17 @@ class _AccessLogPageState extends State<AccessLogPage> {
                     final strangerColor = strangerCount > 0 ? Colors.red : Colors.grey;
                     final acquaintanceColor = acquaintanceCount > 0 ? Colors.green : Colors.grey;
 
-
                     return Card(
                       elevation: 2,
                       margin: const EdgeInsets.symmetric(vertical: 6),
                       child: InkWell(
                         onTap: () {
-                          // Navigate to detail screen in the future (if needed)
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DetailLogPage(logData: log),
+                            ),
+                          );
                         },
                         child: Container(
                           padding: const EdgeInsets.all(12),
