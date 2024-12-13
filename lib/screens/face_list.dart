@@ -204,7 +204,7 @@ class _FaceListPageState extends State<FaceListPage>
                                 leading: Container(
                                     width: 40,
                                     height: 40,
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: Colors.grey, // Màu nền mặc định
                                     ),
