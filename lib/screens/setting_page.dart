@@ -45,7 +45,7 @@ class _SettingPageState extends State<SettingPage> {
               children: [
                  ListTile(
                   leading: const Icon(Icons.timer),
-                  title: const Text('Khoảng thời gian kiểm tra'),
+                  title: const Text('Chu kỳ thông báo'),
                   trailing: DropdownButton<int>(
                     value: _selectedInterval,
                     onChanged: (int? newValue) {
