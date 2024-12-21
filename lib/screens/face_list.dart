@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'add_face_steps.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'face_detail.dart';
 
 class FaceListPage extends StatefulWidget {
   const FaceListPage({super.key});
@@ -201,12 +202,22 @@ class _FaceListPageState extends State<FaceListPage>
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: ListTile(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FaceDetailPage(face: face),
+                                    ),
+                                  ).then((_) {
+                                    _fetchFaces();
+                                  });
+                                },
                                 leading: Container(
                                     width: 40,
                                     height: 40,
                                     decoration: const BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: Colors.grey, // Màu nền mặc định
+                                      color: Colors.grey, 
                                     ),
                                     child: const Icon(
                                         Icons.person,
@@ -222,7 +233,7 @@ class _FaceListPageState extends State<FaceListPage>
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    SizedBox(height: 4),
+                                    const SizedBox(height: 4),
                                     Text(
                                       'Đã thêm: $timeAgo',
                                       style: const TextStyle(fontSize: 14),
