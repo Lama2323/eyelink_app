@@ -17,6 +17,9 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
+// Sửa lại thành GlobalKey<HomePageState>
+final GlobalKey<HomePageState> homePageKey = GlobalKey<HomePageState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -62,7 +65,7 @@ class MyApp extends StatelessWidget {
       ),
       home: Supabase.instance.client.auth.currentUser == null
           ? const AuthPage()
-          : const HomePage(),
+          : HomePage(key: homePageKey), // Truyền key vào HomePage
     );
   }
 }
