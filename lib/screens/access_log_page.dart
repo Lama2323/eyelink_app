@@ -234,7 +234,6 @@ class _AccessLogPageState extends State<AccessLogPage> {
                 return ListView.builder(
                   padding: const EdgeInsets.all(8),
                   itemCount: accessLogs.length,
-                  reverse: true,
                   itemBuilder: (context, index) {
                     final log = accessLogs[index];
                     final time = DateTime.parse(log['time']);
