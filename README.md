@@ -1,4 +1,4 @@
-# Eyelink: Ứng dụng quản lý người quen và nhật ký truy cập
+# Eyelink: Ứng dụng nhật ký nhận diện camera
 
 **Giới thiệu:**
 
