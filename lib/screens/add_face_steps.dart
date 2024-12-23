@@ -22,27 +22,27 @@ class _AddFaceStepsPageState extends State<AddFaceStepsPage> {
   final List<Map<String, dynamic>> _steps = [
     {
       'instruction': 'Nhập tên người cần thêm',
-      'icon': Icons.person,
+      'icon': Icons.person_add_alt_1_rounded,
     },
     {
       'instruction': 'Chụp hình chính diện',
-      'icon': Icons.face,
+      'icon': Icons.face_retouching_natural_rounded,
     },
     {
       'instruction': 'Chụp hình mặt quay trái',
-      'icon': Icons.arrow_back,
+      'icon': Icons.arrow_circle_left_outlined,
     },
     {
       'instruction': 'Chụp hình mặt quay phải',
-      'icon': Icons.arrow_forward,
+      'icon': Icons.arrow_circle_right_outlined,
     },
     {
       'instruction': 'Chụp hình mặt ngước lên',
-      'icon': Icons.arrow_upward,
+      'icon': Icons.arrow_circle_up_outlined,
     },
     {
       'instruction': 'Chụp hình mặt cúi xuống',
-      'icon': Icons.arrow_downward,
+      'icon': Icons.arrow_circle_down_outlined,
     },
   ];
 
@@ -51,21 +51,21 @@ class _AddFaceStepsPageState extends State<AddFaceStepsPage> {
       // Đọc file ảnh
       final bytes = await imageFile.readAsBytes();
       final image = img.decodeImage(bytes);
-      
+
       if (image == null) return null;
 
       // Tính toán kích thước mới để đạt ~2 megapixel (1920x1080)
       final resized = img.copyResize(
-        image,
-        width: 1920,
-        height: 1080,
-        interpolation: img.Interpolation.linear
+          image,
+          width: 1920,
+          height: 1080,
+          interpolation: img.Interpolation.linear
       );
 
       // Tạo file tạm để lưu ảnh đã resize
       final tempDir = await getTemporaryDirectory();
       final tempFile = File('${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg');
-      
+
       // Encode và lưu ảnh với chất lượng 90%
       final compressedBytes = img.encodeJpg(resized, quality: 90);
       await tempFile.writeAsBytes(compressedBytes);
@@ -172,52 +172,52 @@ class _AddFaceStepsPageState extends State<AddFaceStepsPage> {
   }
 
   Future<File?> _cropImage(String imagePath) async {
-  if (!mounted) return null;
-  
-  try {
-    final croppedFile = await ImageCropper().cropImage(
-      sourcePath: imagePath,
-      aspectRatio: const CropAspectRatio(ratioX: 640, ratioY: 480),
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Điều chỉnh ảnh',
-          toolbarColor: Colors.blue,
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.original,
-          lockAspectRatio: true,
-          hideBottomControls: false,
-          dimmedLayerColor: Colors.black.withOpacity(0.8),
-          activeControlsWidgetColor: Colors.blue,
-        ),
-        IOSUiSettings(
-          title: 'Điều chỉnh ảnh',
-          aspectRatioLockEnabled: true,
-          resetAspectRatioEnabled: false,
-          aspectRatioPickerButtonHidden: true,
-          rotateButtonsHidden: true,
-          resetButtonHidden: true,
-        ),
-      ],
-      cropStyle: CropStyle.rectangle,
-      compressQuality: 90,
-      compressFormat: ImageCompressFormat.jpg,
-    );
+    if (!mounted) return null;
 
-    if (!mounted || croppedFile == null) return null;
-    
-    final file = File(croppedFile.path);
-    if (!file.existsSync()) return null;
-    
-    return file;
-  } catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi khi crop ảnh: $e')),
+    try {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: imagePath,
+        aspectRatio: const CropAspectRatio(ratioX: 640, ratioY: 480),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Điều chỉnh ảnh',
+            toolbarColor: Colors.blue,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: true,
+            hideBottomControls: false,
+            dimmedLayerColor: Colors.black.withOpacity(0.8),
+            activeControlsWidgetColor: Colors.blue,
+          ),
+          IOSUiSettings(
+            title: 'Điều chỉnh ảnh',
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+            aspectRatioPickerButtonHidden: true,
+            rotateButtonsHidden: true,
+            resetButtonHidden: true,
+          ),
+        ],
+        cropStyle: CropStyle.rectangle,
+        compressQuality: 90,
+        compressFormat: ImageCompressFormat.jpg,
       );
+
+      if (!mounted || croppedFile == null) return null;
+
+      final file = File(croppedFile.path);
+      if (!file.existsSync()) return null;
+
+      return file;
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi crop ảnh: $e')),
+        );
+      }
+      return null;
     }
-    return null;
   }
-}
 
   Future<void> _uploadData() async {
     final name = _nameController.text.trim();
@@ -229,20 +229,20 @@ class _AddFaceStepsPageState extends State<AddFaceStepsPage> {
         final file = _images[i];
         final fileName = 'image_$i.jpg';
         final filePath = '$folderPath/$fileName';
-        
+
         // Read file as bytes
         final fileBytes = await file.readAsBytes();
-        
+
         try {
           await supabase.storage
-            .from('face')
-            .uploadBinary(
-              filePath,
-              fileBytes,
-              fileOptions: const FileOptions(
-                contentType: 'image/jpeg',
-              ),
-            );
+              .from('face')
+              .uploadBinary(
+            filePath,
+            fileBytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+            ),
+          );
         } on StorageException catch (e) {
           throw Exception('Lỗi upload ảnh ${i + 1}: ${e.message}');
         }
@@ -253,8 +253,8 @@ class _AddFaceStepsPageState extends State<AddFaceStepsPage> {
         await supabase
             .from('face')
             .insert({
-              'name': name,
-            });
+          'name': name,
+        });
 
         if (mounted) {
           // Navigate back to the previous screen with result
@@ -278,31 +278,63 @@ class _AddFaceStepsPageState extends State<AddFaceStepsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Thêm người quen'),
+        title: const Text('Thêm người quen', style: TextStyle(fontWeight: FontWeight.bold)), // Bold title
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
         child: Center(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center, // Center content vertically
             children: [
-              Icon(
-                step['icon'],
-                size: 120,
+              Container(
+                padding: const EdgeInsets.all(24.0),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  step['icon'],
+                  size: 80, // Reduced icon size
+                  color: Colors.blue,
+                ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 32),
               Text(
                 step['instruction'],
-                style: const TextStyle(fontSize: 18),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                textAlign: TextAlign.center,
               ),
               if (_currentStep == 0)
-                TextField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Tên'),
+                Padding(
+                  padding: const EdgeInsets.only(top: 24.0),
+                  child: SizedBox(
+                    // Giới hạn chiều cao của TextField
+                    height: 70,
+                    child: TextField(
+                      controller: _nameController,
+                      maxLines: null, // Cho phép xuống dòng
+                      keyboardType: TextInputType.multiline, // Bàn phím multiline
+                      decoration: InputDecoration(
+                        labelText: 'Tên',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                    ),
+                  )
                 ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _nextStep,
-                child: const Text('OK'),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity, // Full width button
+                child: ElevatedButton(
+                  onPressed: _nextStep,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  child: const Text('OK', style: TextStyle(color: Colors.white)),
+                ),
               ),
             ],
           ),
@@ -322,5 +354,4 @@ class _AddFaceStepsPageState extends State<AddFaceStepsPage> {
     _nameController.dispose();
     super.dispose();
   }
-
 }
