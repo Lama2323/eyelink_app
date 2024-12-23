@@ -13,7 +13,7 @@ class AccessLogPage extends StatefulWidget {
 
 class _AccessLogPageState extends State<AccessLogPage> {
   final supabase = Supabase.instance.client;
-  String _selectedFilter = 'Ngày'; // Mặc định lọc theo ngày
+  String _selectedFilter = 'Ngày';
   DateTime? _startDate;
   DateTime? _endDate;
   TimeOfDay? _startTime;
@@ -25,15 +25,16 @@ class _AccessLogPageState extends State<AccessLogPage> {
         .stream(primaryKey: ['id'])
         .map((maps) => maps as List<Map<String, dynamic>>)
         .map((data) {
-          // Chỉ hiển thị log khi stranger khác 0 và face_name khác rỗng
+          // Chỉ hiển thị log khi stranger là 0 và face_name khác rỗng
           data = data.where((log) {
-            return log['stranger'] != 0 && (log['face_name'] == null || (log['face_name'] as List).isEmpty);
+            return log['stranger'] == 0 && log['face_name'] != null && (log['face_name'] as List).isNotEmpty;
           }).toList();
 
           if (_startDate == null || _endDate == null) return data;
 
           return data.where((log) {
-            final logTime = DateTime.parse(log['time']);
+            // Sử dụng DateTime.parse(log['time']).toUtc() để đảm bảo chuyển đổi chính xác sang UTC
+            final logTime = DateTime.parse(log['time']).toUtc();
 
             // Kiểm tra khoảng thời gian
             DateTime startDateTime, endDateTime;
@@ -134,7 +135,7 @@ class _AccessLogPageState extends State<AccessLogPage> {
       });
     }
   }
-  
+
   String _getFormattedStartDate() {
     if (_startDate == null) return 'Chọn';
     switch (_selectedFilter) {
@@ -174,15 +175,16 @@ class _AccessLogPageState extends State<AccessLogPage> {
         title: const Text('Lịch sử nhận diện'),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Filter Section
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 // Filter Dropdown
                 DropdownButton<String>(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   value: _selectedFilter,
                   onChanged: (String? newValue) {
                     setState(() {
@@ -201,18 +203,19 @@ class _AccessLogPageState extends State<AccessLogPage> {
                     );
                   }).toList(),
                 ),
-                // Start Date/Time Picker
-                ElevatedButton(
-                  onPressed: _selectStartDate,
-                  child: Text(_getFormattedStartDate()),
-                ),
-                // Arrow Icon
-                const Icon(Icons.arrow_forward),
-                // End Date/Time Picker
-                ElevatedButton(
-                  onPressed: _selectEndDate,
-                  child: Text(_getFormattedEndDate()),
-                ),
+                Column(
+                  children: [
+                    ElevatedButton(
+                      onPressed: _selectStartDate,
+                      child: Text(_getFormattedStartDate()),
+                    ),
+                    ElevatedButton(
+                      onPressed: _selectEndDate,
+                      child: Text(_getFormattedEndDate()),
+                    ),
+                  ],
+                )
+
               ],
             ),
           ),
@@ -236,12 +239,12 @@ class _AccessLogPageState extends State<AccessLogPage> {
                   itemCount: accessLogs.length,
                   itemBuilder: (context, index) {
                     final log = accessLogs[index];
-                    final time = DateTime.parse(log['time']);
+                    final time = DateTime.parse(log['time']).toLocal();
                     final formattedTime =
                         DateFormat('yyyy-MM-dd HH:mm:ss').format(time);
                     final strangerCount = log['stranger'];
-                    final faceNames = List<String>.from(log['face_name'] ?? []);
-                    final acquaintanceCount = faceNames.length;
+                    final faceNames = List<dynamic>.from(log['face_name'] ?? []);
+                    final acquaintanceCount = faceNames.isNotEmpty? faceNames.length : 0;
                     final strangerColor =
                         strangerCount > 0 ? Colors.red : Colors.grey;
                     final acquaintanceColor =

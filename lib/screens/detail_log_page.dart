@@ -8,10 +8,12 @@ class DetailLogPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final time = DateTime.parse(logData['time']);
+    // Chuyển đổi thời gian sang giờ địa phương trước khi hiển thị
+    final time = DateTime.parse(logData['time']).toLocal();
     final formattedTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(time);
     final strangerCount = logData['stranger'];
-    final faceNames = List<String>.from(logData['face_name'] ?? []);
+    // Sửa List<String> thành List<dynamic>
+    final faceNames = List<dynamic>.from(logData['face_name'] ?? []);
     final acquaintanceCount = faceNames.length;
 
     return Scaffold(
@@ -62,9 +64,9 @@ class DetailLogPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       ...faceNames.map((name) => ListTile(
-                        leading: const Icon(Icons.face, color: Colors.blue), // Add an icon for face names
-                        title: Text(name),
-                      )),
+                            leading: const Icon(Icons.face, color: Colors.blue), // Add an icon for face names
+                            title: Text(name),
+                          )),
                     ],
                   ),
                 ),
