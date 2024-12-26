@@ -7,7 +7,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'screens/forgot_password_page.dart';
-import 'screens/reset_password_page.dart';
 
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
   'high_importance_channel',
@@ -60,20 +59,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _handleIncomingLinks();
   }
-
-  void _handleIncomingLinks() {
-    Supabase.instance.client.auth.onAuthStateChange.listen((AuthState data) {
-      final Session? session = data.session;
-      final AuthChangeEvent event = data.event;
-
-      if (event == AuthChangeEvent.passwordRecovery) {
-        Navigator.pushReplacementNamed(context, '/reset-password');
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -87,7 +73,6 @@ class _MyAppState extends State<MyApp> {
             ? const LoginPage()
             : HomePage(key: homePageKey),
         '/forgot-password': (context) => const ForgotPasswordPage(),
-        '/reset-password': (context) => const ResetPasswordPage(),
       },
     );
   }

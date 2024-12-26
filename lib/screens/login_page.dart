@@ -72,10 +72,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _navigateToForgotPasswordPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
-    );
+    Navigator.pushNamed(context, '/forgot-password');
   }
 
   @override

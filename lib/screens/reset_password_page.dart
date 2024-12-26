@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ResetPasswordPage extends StatefulWidget {
-  const ResetPasswordPage({super.key});
+  final String email;
+  final String otp;
+
+  const ResetPasswordPage({super.key, required this.email, required this.otp});
 
   @override
   _ResetPasswordPageState createState() => _ResetPasswordPageState();
@@ -18,7 +21,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   Future<void> _updatePassword() async {
     final newPassword = _newPasswordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
-
+    final email = widget.email;
     if (newPassword.isEmpty || confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Hãy nhập mật khẩu mới và xác nhận')),
@@ -39,14 +42,18 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
     try {
       await Supabase.instance.client.auth.updateUser(
-          UserAttributes(password: newPassword)
+        UserAttributes(password: newPassword),
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Đặt lại mật khẩu thành công!')),
         );
-        Navigator.pushReplacementNamed(context, '/'); 
+        // Đăng xuất người dùng
+        await Supabase.instance.client.auth.signOut();
+
+        // Chuyển hướng đến trang đăng nhập
+        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
       }
     } catch (error) {
       if (mounted) {
