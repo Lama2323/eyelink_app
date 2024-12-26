@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../main.dart'; // Import main.dart để truy cập homePageKey
+import '../main.dart'; 
 
 class SettingPage extends StatefulWidget {
   const SettingPage({Key? key}) : super(key: key);
@@ -29,7 +29,6 @@ class _SettingPageState extends State<SettingPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setInt('checkInterval', _selectedInterval);
 
-    // Cập nhật HomePage thông qua GlobalKey
     homePageKey.currentState?.loadSettings();
   }
 

@@ -254,6 +254,7 @@ class _FaceListPageState extends State<FaceListPage>
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToAddFace,
         child: const Icon(Icons.add),
+        backgroundColor: Colors.blue,
       ),
     );
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'face_list.dart';
-import 'authentication.dart';
+import 'login_page.dart';
 import 'access_log_page.dart';
 import 'setting_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,10 +12,10 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => HomePageState(); // Sửa thành HomePageState
+  State<HomePage> createState() => HomePageState(); 
 }
 
-class HomePageState extends State<HomePage> { // Sửa thành HomePageState
+class HomePageState extends State<HomePage> { 
   final supabase = Supabase.instance.client;
   int _selectedInterval = 5;
   late RealtimeChannel _accessLogChannel;
@@ -40,7 +40,7 @@ class HomePageState extends State<HomePage> { // Sửa thành HomePageState
   void _logout(BuildContext context) async {
     await supabase.auth.signOut();
     Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => const AuthPage()));
+        context, MaterialPageRoute(builder: (context) => const LoginPage()));
   }
 
   Future<void> _setupRealtimeListener() async {
@@ -89,7 +89,6 @@ class HomePageState extends State<HomePage> { // Sửa thành HomePageState
         notificationDetails,
       );
 
-      // Cập nhật thời điểm thông báo cuối cùng
       _lastNotificationTime = DateTime.now();
       await prefs.setInt('lastNotificationTime', _lastNotificationTime!.millisecondsSinceEpoch);
     }

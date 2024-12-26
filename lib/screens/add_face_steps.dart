@@ -142,10 +142,10 @@ class _AddFaceStepsPageState extends State<AddFaceStepsPage> {
       await _uploadData();
 
       if (!mounted) return;
-      Navigator.of(context).pop(); // Đóng dialog loading
+      Navigator.of(context).pop(); 
     } catch (e) {
       if (mounted) {
-        Navigator.of(context).pop(); // Đóng dialog loading
+        Navigator.of(context).pop(); 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Lỗi: $e')),
         );
@@ -257,7 +257,6 @@ class _AddFaceStepsPageState extends State<AddFaceStepsPage> {
         });
 
         if (mounted) {
-          // Navigate back to the previous screen with result
           Navigator.pop(context, true);
         }
       } on PostgrestException catch (e) {
@@ -284,7 +283,7 @@ class _AddFaceStepsPageState extends State<AddFaceStepsPage> {
         padding: const EdgeInsets.all(24.0),
         child: Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center, // Center content vertically
+            mainAxisAlignment: MainAxisAlignment.center, 
             children: [
               Container(
                 padding: const EdgeInsets.all(24.0),
@@ -294,7 +293,7 @@ class _AddFaceStepsPageState extends State<AddFaceStepsPage> {
                 ),
                 child: Icon(
                   step['icon'],
-                  size: 80, // Reduced icon size
+                  size: 80, 
                   color: Colors.blue,
                 ),
               ),
@@ -312,8 +311,8 @@ class _AddFaceStepsPageState extends State<AddFaceStepsPage> {
                     height: 70,
                     child: TextField(
                       controller: _nameController,
-                      maxLines: null, // Cho phép xuống dòng
-                      keyboardType: TextInputType.multiline, // Bàn phím multiline
+                      maxLines: null, 
+                      keyboardType: TextInputType.multiline, 
                       decoration: InputDecoration(
                         labelText: 'Tên',
                         border: OutlineInputBorder(
@@ -325,7 +324,7 @@ class _AddFaceStepsPageState extends State<AddFaceStepsPage> {
                 ),
               const SizedBox(height: 32),
               SizedBox(
-                width: double.infinity, // Full width button
+                width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _nextStep,
                   style: ElevatedButton.styleFrom(
@@ -345,7 +344,6 @@ class _AddFaceStepsPageState extends State<AddFaceStepsPage> {
 
   @override
   void dispose() {
-    // Cleanup tất cả ảnh tạm khi widget bị dispose
     for (final image in _images) {
       if (image.existsSync()) {
         image.delete().catchError((_) {});

@@ -1,30 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'home.dart'; 
+import 'home.dart';
+import 'register_page.dart';
 
-class AuthPage extends StatefulWidget {
-  const AuthPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  _AuthPageState createState() => _AuthPageState();
+  _LoginPageState createState() => _LoginPageState();
 }
 
-class _AuthPageState extends State<AuthPage> {
+class _LoginPageState extends State<LoginPage> {
   final supabase = Supabase.instance.client;
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  bool _isLogin = true;
   bool _isLoading = false;
-  bool _showPassword = false; 
+  bool _showPassword = false;
 
-  void _toggleAuthMode() {
-    setState(() {
-      _isLogin = !_isLogin;
-    });
-  }
-
-  Future<void> _authenticate() async {
+  Future<void> _login() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
@@ -40,19 +34,68 @@ class _AuthPageState extends State<AuthPage> {
     });
 
     try {
-      if (_isLogin) {
-        await supabase.auth.signInWithPassword(email: email, password: password);
-      } else {
-        await supabase.auth.signUp(email: email, password: password);
-      }
+      await supabase.auth.signInWithPassword(email: email, password: password);
       if (mounted) {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => const HomePage()));
       }
     } catch (error) {
       if (mounted) {
+        String errorMessage = 'Lỗi xác thực';
+        if (error is AuthException) {
+          errorMessage = _handleAuthException(error);
+        } else {
+          errorMessage = 'Lỗi không xác định: $error';
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Authentication Error: $error')),
+          SnackBar(content: Text(errorMessage)),
+        );
+      }
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Hàm xử lý lỗi AuthException
+  String _handleAuthException(AuthException error) {
+    switch (error.message) {
+      case 'Email not confirmed':
+        return 'Email chưa được xác nhận. Vui lòng kiểm tra hộp thư đến của bạn.';
+      case 'Invalid login credentials':
+        return 'Email hoặc mật khẩu không đúng.';
+      default:
+        return 'Lỗi xác thực: ${error.message}';
+    }
+  }
+
+  // Hàm xử lý quên mật khẩu
+  Future<void> _resetPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Hãy nhập email của bạn')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await supabase.auth.resetPasswordForEmail(email);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Vui lòng kiểm tra email để đặt lại mật khẩu')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi: $error')),
         );
       }
     } finally {
@@ -74,18 +117,25 @@ class _AuthPageState extends State<AuthPage> {
             children: [
               const SizedBox(height: 40),
               Icon(
-                Icons.lock,
+                Icons.camera,
                 size: 100,
-                color: Colors.blueGrey[800],
+                color: Colors.blue,
               ),
-              const SizedBox(height: 40),
-              // Tiêu đề
               Text(
-                _isLogin ? 'ĐĂNG NHẬP' : 'ĐĂNG KÝ',
+                'EYELINK',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blueGrey[800],
+                  color: Colors.blue,
+                ),
+              ),
+              const SizedBox(height: 40),
+              Text(
+                'ĐĂNG NHẬP',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
                 ),
               ),
               const SizedBox(height: 30),
@@ -100,25 +150,25 @@ class _AuthPageState extends State<AuthPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   filled: true,
-                  fillColor: Colors.grey[200],
+                  fillColor: Colors.grey[100],
                 ),
               ),
               const SizedBox(height: 20),
               // Input password
               TextFormField(
                 controller: _passwordController,
-                obscureText: !_showPassword, // Ẩn/hiện mật khẩu dựa trên _showPassword
+                obscureText: !_showPassword,
                 decoration: InputDecoration(
                   labelText: 'Mật khẩu',
                   prefixIcon: const Icon(Icons.lock),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _showPassword ? Icons.visibility : Icons.visibility_off, // Thay đổi icon dựa trên _showPassword
+                      _showPassword ? Icons.visibility : Icons.visibility_off,
                       color: Colors.grey,
                     ),
                     onPressed: () {
                       setState(() {
-                        _showPassword = !_showPassword; // Toggle _showPassword
+                        _showPassword = !_showPassword;
                       });
                     },
                   ),
@@ -126,14 +176,24 @@ class _AuthPageState extends State<AuthPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   filled: true,
-                  fillColor: Colors.grey[200],
+                  fillColor: Colors.grey[100],
                 ),
               ),
-              const SizedBox(height: 30),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  onPressed: _isLoading ? null : _resetPassword,
+                  child: const Text(
+                    'Quên mật khẩu?',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _isLoading ? null : _authenticate,
+                onPressed: _isLoading ? null : _login,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueGrey[800],
+                  backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 40,
                     vertical: 16,
@@ -145,18 +205,21 @@ class _AuthPageState extends State<AuthPage> {
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : Text(
-                        _isLogin ? 'Đăng nhập' : 'Đăng ký',
-                        style: const TextStyle(fontSize: 18, color: Colors.white),
-                      ),
+                  'Đăng nhập',
+                  style: const TextStyle(fontSize: 18, color: Colors.white),
+                ),
               ),
               const SizedBox(height: 20),
               TextButton(
-                onPressed: _isLoading ? null : _toggleAuthMode,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegisterPage()),
+                  );
+                },
                 child: Text(
-                  _isLogin
-                      ? 'Tạo tài khoản mới'
-                      : 'Đã có tài khoản? Đăng nhập ngay',
-                  style: TextStyle(color: Colors.blueGrey[800]),
+                  'Tạo tài khoản mới',
+                  style: TextStyle(color: Colors.blue),
                 ),
               ),
             ],

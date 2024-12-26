@@ -25,15 +25,13 @@ class _AccessLogPageState extends State<AccessLogPage> {
         .stream(primaryKey: ['id'])
         .map((maps) => maps as List<Map<String, dynamic>>)
         .map((data) {
-          // Chỉ hiển thị log khi stranger là 0 và face_name khác rỗng
           data = data.where((log) {
             return log['stranger'] == 0 && log['face_name'] != null && (log['face_name'] as List).isNotEmpty;
           }).toList();
 
           if (_startDate == null || _endDate == null) return data;
 
-          return data.where((log) {
-            // Sử dụng DateTime.parse(log['time']).toUtc() để đảm bảo chuyển đổi chính xác sang UTC
+          return data.where((log) { 
             final logTime = DateTime.parse(log['time']).toUtc();
 
             // Kiểm tra khoảng thời gian
@@ -177,12 +175,10 @@ class _AccessLogPageState extends State<AccessLogPage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Filter Section
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
-                // Filter Dropdown
                 DropdownButton<String>(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   value: _selectedFilter,
@@ -219,7 +215,6 @@ class _AccessLogPageState extends State<AccessLogPage> {
               ],
             ),
           ),
-          // Logs List
           Expanded(
             child: StreamBuilder<List<Map<String, dynamic>>>(
               stream: _getAccessLogStream(),

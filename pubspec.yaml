@@ -24,6 +24,7 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   permission_handler: ^11.0.0 
   timeago: ^3.3.0
+  email_validator: ^3.0.0
 
 dev_dependencies:
   flutter_test:

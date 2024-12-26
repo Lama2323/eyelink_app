@@ -86,13 +86,11 @@ class _FaceDetailPageState extends State<FaceDetailPage> {
           ),
         );
 
-        // Update name in database
         await supabase
             .from('face')
             .update({'name': newName})
             .match({'id': widget.face['id']});
 
-        // Rename folder in storage
         final oldFolderPath = _name;
         final newFolderPath = newName;
         final List<FileObject> files =
@@ -121,7 +119,6 @@ class _FaceDetailPageState extends State<FaceDetailPage> {
         }
       } catch (error) {
         if (mounted) {
-          // Dismiss loading indicator
           Navigator.of(context).pop();
 
           ScaffoldMessenger.of(context).showSnackBar(
