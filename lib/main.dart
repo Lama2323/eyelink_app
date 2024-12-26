@@ -6,6 +6,8 @@ import 'screens/home.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
+import 'screens/forgot_password_page.dart';
+import 'screens/reset_password_page.dart';
 
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
   'high_importance_channel',
@@ -47,8 +49,30 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    _handleIncomingLinks();
+  }
+
+  void _handleIncomingLinks() {
+    Supabase.instance.client.auth.onAuthStateChange.listen((AuthState data) {
+      final Session? session = data.session;
+      final AuthChangeEvent event = data.event;
+
+      if (event == AuthChangeEvent.passwordRecovery) {
+        Navigator.pushReplacementNamed(context, '/reset-password');
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +81,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Supabase.instance.client.auth.currentUser == null
-          ? const LoginPage()
-          : HomePage(key: homePageKey), 
+      initialRoute: '/',
+      routes: {
+        '/': (context) => Supabase.instance.client.auth.currentUser == null
+            ? const LoginPage()
+            : HomePage(key: homePageKey),
+        '/forgot-password': (context) => const ForgotPasswordPage(),
+        '/reset-password': (context) => const ResetPasswordPage(),
+      },
     );
   }
 }

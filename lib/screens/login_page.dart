@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'home.dart';
 import 'register_page.dart';
+import 'forgot_password_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -70,39 +71,11 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Hàm xử lý quên mật khẩu
-  Future<void> _resetPassword() async {
-    final email = _emailController.text.trim();
-    if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Hãy nhập email của bạn')),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      await supabase.auth.resetPasswordForEmail(email);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Vui lòng kiểm tra email để đặt lại mật khẩu')),
-        );
-      }
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $error')),
-        );
-      }
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+  void _navigateToForgotPasswordPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
+    );
   }
 
   @override
@@ -182,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton(
-                  onPressed: _isLoading ? null : _resetPassword,
+                  onPressed: _navigateToForgotPasswordPage,
                   child: const Text(
                     'Quên mật khẩu?',
                     style: TextStyle(color: Colors.grey),
