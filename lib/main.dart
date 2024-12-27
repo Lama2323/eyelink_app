@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/login_page.dart';
@@ -8,6 +11,8 @@ import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'screens/forgot_password_page.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
   'high_importance_channel',
@@ -21,7 +26,7 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 final GlobalKey<HomePageState> homePageKey = GlobalKey<HomePageState>();
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: ".env");
@@ -46,7 +51,108 @@ void main() async {
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
   timeago.setLocaleMessages('vi', timeago.ViMessages());
+
+  // Khởi tạo Background Service
+  await initializeService();
+
   runApp(const MyApp());
+}
+
+Future<void> initializeService() async {
+  final service = FlutterBackgroundService();
+
+  const AndroidNotificationChannel serviceChannel = AndroidNotificationChannel(
+    'background_service_channel',
+    'Background Service Notifications',
+    description: 'Channel for background service notifications',
+    importance: Importance.low, 
+  );
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(serviceChannel);
+
+  await service.configure(
+    androidConfiguration: AndroidConfiguration(
+      onStart: onStart,
+      autoStart: true,
+      isForegroundMode: true,
+      notificationChannelId: 'background_service_channel',
+      initialNotificationTitle: 'Ứng dụng đang chạy ngầm',
+      initialNotificationContent: 'Đang giám sát...',
+    ),
+    iosConfiguration: IosConfiguration(
+      autoStart: true,
+      onForeground: onStart,
+      onBackground: onIosBackground,
+    ),
+  );
+}
+
+@pragma('vm:entry-point')
+void onStart(ServiceInstance service) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL'] ?? '',
+    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+  );
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  service.on('stopService').listen((event) {
+    service.stopSelf();
+  });
+
+  Supabase.instance.client
+      .channel('access_log_changes')
+      .onPostgresChanges(
+        event: PostgresChangeEvent.insert,
+        schema: 'public',
+        table: 'access_log',
+        callback: (payload) async {
+          if (payload.newRecord != null && payload.newRecord!['stranger'] > 0) {
+            final int strangerCount = payload.newRecord!['stranger'] as int;
+            final prefs = await SharedPreferences.getInstance();
+            final selectedInterval = prefs.getInt('checkInterval') ?? 5;
+            final lastNotificationTime =
+                prefs.getInt('lastNotificationTime') ?? 0;
+            final now = DateTime.now().millisecondsSinceEpoch;
+
+            if (lastNotificationTime == 0 ||
+                now - lastNotificationTime >= selectedInterval * 1000) {
+              flutterLocalNotificationsPlugin.show(
+                0,
+                'Phát hiện người lạ!',
+                'Phát hiện $strangerCount người lạ.',
+                const NotificationDetails(
+                  android: AndroidNotificationDetails(
+                    'high_importance_channel',
+                    'High Importance Notifications',
+                    priority: Priority.high,
+                    importance: Importance.max,
+                    icon: '@mipmap/ic_launcher',
+                  ),
+                ),
+              );
+              await prefs.setInt('lastNotificationTime', now);
+            }
+          }
+        },
+      )
+      .subscribe();
+}
+
+@pragma('vm:entry-point')
+Future<bool> onIosBackground(ServiceInstance service) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  print('FLUTTER BACKGROUND FETCH');
+  return true;
 }
 
 class MyApp extends StatefulWidget {
@@ -61,6 +167,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

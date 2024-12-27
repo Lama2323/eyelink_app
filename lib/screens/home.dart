@@ -5,27 +5,24 @@ import 'login_page.dart';
 import 'access_log_page.dart';
 import 'setting_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../main.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => HomePageState(); 
+  State<HomePage> createState() => HomePageState();
 }
 
-class HomePageState extends State<HomePage> { 
+class HomePageState extends State<HomePage> {
   final supabase = Supabase.instance.client;
   int _selectedInterval = 5;
-  late RealtimeChannel _accessLogChannel;
   DateTime? _lastNotificationTime;
 
   @override
   void initState() {
     super.initState();
     loadSettings();
-    _setupRealtimeListener();
   }
 
   Future<void> loadSettings() async {
@@ -43,60 +40,8 @@ class HomePageState extends State<HomePage> {
         context, MaterialPageRoute(builder: (context) => const LoginPage()));
   }
 
-  Future<void> _setupRealtimeListener() async {
-    _accessLogChannel = supabase.channel('access_log_changes');
-
-    _accessLogChannel
-        .onPostgresChanges(
-      event: PostgresChangeEvent.insert,
-      schema: 'public',
-      table: 'access_log',
-      callback: (payload) {
-        if (payload.newRecord != null) {
-          Map<String, dynamic> newRecord = payload.newRecord!;
-          if (newRecord['stranger'] > 0) {
-            _showNotification(newRecord['stranger']);
-          }
-        }
-      },
-    )
-        .subscribe();
-  }
-
-  Future<void> _showNotification(int strangerCount) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    _lastNotificationTime = DateTime.fromMillisecondsSinceEpoch(
-        prefs.getInt('lastNotificationTime') ?? 0);
-
-    // Kiểm tra thời gian hồi
-    if (_lastNotificationTime == null ||
-        DateTime.now().difference(_lastNotificationTime!) >=
-            Duration(seconds: _selectedInterval)) {
-      const AndroidNotificationDetails androidNotificationDetails =
-      AndroidNotificationDetails('high_importance_channel',
-          'High Importance Notifications',
-          priority: Priority.high,
-          importance: Importance.max,
-          icon: '@mipmap/ic_launcher');
-
-      const NotificationDetails notificationDetails =
-      NotificationDetails(android: androidNotificationDetails);
-
-      await flutterLocalNotificationsPlugin.show(
-        0,
-        'Có người lạ!',
-        'Phát hiện $strangerCount người lạ',
-        notificationDetails,
-      );
-
-      _lastNotificationTime = DateTime.now();
-      await prefs.setInt('lastNotificationTime', _lastNotificationTime!.millisecondsSinceEpoch);
-    }
-  }
-
   @override
   void dispose() {
-    _accessLogChannel.unsubscribe();
     super.dispose();
   }
 
@@ -112,8 +57,7 @@ class HomePageState extends State<HomePage> {
             const ListTile(
                 title: Text(
                   'Menu',
-                  style: TextStyle(
-                      fontSize: 30, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                 )),
             ListTile(
               title: const Text('Danh sách người quen'),
@@ -133,8 +77,7 @@ class HomePageState extends State<HomePage> {
                     context,
                     MaterialPageRoute(builder: (context) => const SettingPage()),
                   );
-                }
-            ),
+                }),
             ListTile(
               title: const Text('Đăng xuất'),
               onTap: () => _logout(context),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'change_password_page.dart'; 
+import 'change_password_page.dart';
 import '../main.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({Key? key}) : super(key: key);
@@ -30,7 +31,8 @@ class _SettingPageState extends State<SettingPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setInt('checkInterval', _selectedInterval);
 
-    homePageKey.currentState?.loadSettings();
+    final service = FlutterBackgroundService();
+    service.invoke('reloadSettings');
   }
 
   @override
@@ -68,7 +70,7 @@ class _SettingPageState extends State<SettingPage> {
                     ],
                   ),
                 ),
-                const Divider(), 
+                const Divider(),
                 ListTile(
                   leading: const Icon(Icons.lock),
                   title: const Text('Đổi mật khẩu'),
