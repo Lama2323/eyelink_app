@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'add_face_steps.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'face_detail.dart';
+import 'package:intl/intl.dart'; // Thêm import này
 
 class FaceListPage extends StatefulWidget {
   const FaceListPage({super.key});
@@ -180,76 +181,76 @@ class _FaceListPageState extends State<FaceListPage>
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
             : faces.isEmpty
-                ? const Center(
-                    child: Text('Chưa có người quen nào',
-                        style: TextStyle(fontSize: 16)),
-                  )
-                : ListView.builder(
-                    itemCount: faces.length,
-                    itemBuilder: (context, index) {
-                      final face = faces[index];
-                      final createdAt = DateTime.parse(face['created_at']);
-                      final timeAgo = timeago.format(createdAt, locale: 'vi');
+            ? const Center(
+          child: Text('Chưa có người quen nào',
+              style: TextStyle(fontSize: 16)),
+        )
+            : ListView.builder(
+          itemCount: faces.length,
+          itemBuilder: (context, index) {
+            final face = faces[index];
+            final createdAt = DateTime.parse(face['created_at']).toLocal(); 
+            final timeAgo = timeago.format(createdAt, locale: 'vi');
 
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0, vertical: 4.0),
-                        child: Card(
-                            elevation: 3,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ListTile(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => FaceDetailPage(face: face),
-                                    ),
-                                  ).then((_) {
-                                    _fetchFaces();
-                                  });
-                                },
-                                leading: Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.grey, 
-                                    ),
-                                    child: const Icon(
-                                        Icons.person,
-                                        color: Colors.white
-                                    )
-                                ),
-                                title: Text(
-                                  face['name'] ?? '',
-                                  style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Đã thêm: $timeAgo',
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                  ],
-                                ),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () => _deleteFace(face),
-                                ),
-                              ),
-                            )),
-                      );
-                    },
+            return Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 8.0, vertical: 4.0),
+              child: Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListTile(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FaceDetailPage(face: face),
+                          ),
+                        ).then((_) {
+                          _fetchFaces();
+                        });
+                      },
+                      leading: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.grey,
+                          ),
+                          child: const Icon(
+                              Icons.person,
+                              color: Colors.white
+                          )
+                      ),
+                      title: Text(
+                        face['name'] ?? '',
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 4),
+                          Text(
+                            'Đã thêm: $timeAgo',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete,
+                            color: Colors.red),
+                        onPressed: () => _deleteFace(face),
+                      ),
+                    ),
+                  )),
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToAddFace,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../main.dart'; 
+import 'change_password_page.dart'; 
+import '../main.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({Key? key}) : super(key: key);
@@ -46,7 +47,7 @@ class _SettingPageState extends State<SettingPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                 ListTile(
+                ListTile(
                   leading: const Icon(Icons.timer),
                   title: const Text('Chu kỳ thông báo'),
                   trailing: DropdownButton<int>(
@@ -66,6 +67,18 @@ class _SettingPageState extends State<SettingPage> {
                       DropdownMenuItem(value: 60, child: Text('60 giây')),
                     ],
                   ),
+                ),
+                const Divider(), 
+                ListTile(
+                  leading: const Icon(Icons.lock),
+                  title: const Text('Đổi mật khẩu'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ChangePasswordPage()),
+                    );
+                  },
                 ),
               ],
             ),

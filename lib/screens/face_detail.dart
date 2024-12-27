@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:intl/intl.dart';
 
 class FaceDetailPage extends StatefulWidget {
   final Map<String, dynamic> face;
@@ -22,7 +23,7 @@ class _FaceDetailPageState extends State<FaceDetailPage> {
   void initState() {
     super.initState();
     _name = widget.face['name'];
-    _createdAt = DateTime.parse(widget.face['created_at']);
+    _createdAt = DateTime.parse(widget.face['created_at']).toLocal();
     _imageUrl = '';
     _fetchImageUrl();
   }
@@ -37,7 +38,7 @@ class _FaceDetailPageState extends State<FaceDetailPage> {
 
       final String imageUrl = await supabase.storage
           .from('face')
-          .createSignedUrl('$folderPath/$fileName', 60 * 60 * 24 * 365 * 10); 
+          .createSignedUrl('$folderPath/$fileName', 60 * 60 * 24 * 365 * 10);
 
       setState(() {
         _imageUrl = imageUrl;
@@ -94,7 +95,7 @@ class _FaceDetailPageState extends State<FaceDetailPage> {
         final oldFolderPath = _name;
         final newFolderPath = newName;
         final List<FileObject> files =
-            await supabase.storage.from('face').list(path: oldFolderPath);
+        await supabase.storage.from('face').list(path: oldFolderPath);
         for (var file in files) {
           final oldFilePath = '$oldFolderPath/${file.name}';
           final newFilePath = '$newFolderPath/${file.name}';

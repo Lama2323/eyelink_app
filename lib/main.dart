@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'screens/forgot_password_page.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
   'high_importance_channel',
@@ -44,7 +45,7 @@ void main() async {
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
-
+  timeago.setLocaleMessages('vi', timeago.ViMessages());
   runApp(const MyApp());
 }
 
