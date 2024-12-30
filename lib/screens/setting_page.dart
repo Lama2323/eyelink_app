@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'change_password_page.dart';
-import '../main.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 
 class SettingPage extends StatefulWidget {
@@ -25,6 +24,14 @@ class _SettingPageState extends State<SettingPage> {
     setState(() {
       _selectedInterval = prefs.getInt('checkInterval') ?? 5;
     });
+      final service = FlutterBackgroundService();
+    if (_selectedInterval != 0) {
+        if (await service.isRunning()) {
+          service.invoke('reloadSettings');
+        } else {
+          service.startService();
+        }
+    }
   }
 
   Future<void> _saveSettings() async {
@@ -32,7 +39,17 @@ class _SettingPageState extends State<SettingPage> {
     await prefs.setInt('checkInterval', _selectedInterval);
 
     final service = FlutterBackgroundService();
-    service.invoke('reloadSettings');
+    if (_selectedInterval == 0) {
+      // Dừng service nếu chọn "Tắt"
+      service.invoke('stopService');
+    } else {
+      // Khởi động lại service nếu chọn các khoảng thời gian khác
+       if (await service.isRunning()) {
+          service.invoke('reloadSettings');
+        } else {
+          service.startService();
+        }
+    }
   }
 
   @override
@@ -63,6 +80,7 @@ class _SettingPageState extends State<SettingPage> {
                       }
                     },
                     items: const [
+                      DropdownMenuItem(value: 0, child: Text('Tắt')),
                       DropdownMenuItem(value: 5, child: Text('5 giây')),
                       DropdownMenuItem(value: 10, child: Text('10 giây')),
                       DropdownMenuItem(value: 30, child: Text('30 giây')),

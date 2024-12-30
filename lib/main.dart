@@ -65,7 +65,7 @@ Future<void> initializeService() async {
     'background_service_channel',
     'Background Service Notifications',
     description: 'Channel for background service notifications',
-    importance: Importance.low, 
+    importance: Importance.low,
   );
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -79,14 +79,14 @@ Future<void> initializeService() async {
   await service.configure(
     androidConfiguration: AndroidConfiguration(
       onStart: onStart,
-      autoStart: true,
+      autoStart: false,
       isForegroundMode: true,
       notificationChannelId: 'background_service_channel',
-      initialNotificationTitle: 'Ứng dụng đang chạy ngầm',
-      initialNotificationContent: 'Đang giám sát...',
+      // initialNotificationTitle: 'Ứng dụng đang chạy ngầm',
+      // initialNotificationContent: 'Đang giám sát...',
     ),
     iosConfiguration: IosConfiguration(
-      autoStart: true,
+      autoStart: false,
       onForeground: onStart,
       onBackground: onIosBackground,
     ),
@@ -109,43 +109,90 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  Supabase.instance.client
-      .channel('access_log_changes')
-      .onPostgresChanges(
-        event: PostgresChangeEvent.insert,
-        schema: 'public',
-        table: 'access_log',
-        callback: (payload) async {
-          if (payload.newRecord != null && payload.newRecord!['stranger'] > 0) {
-            final int strangerCount = payload.newRecord!['stranger'] as int;
-            final prefs = await SharedPreferences.getInstance();
-            final selectedInterval = prefs.getInt('checkInterval') ?? 5;
-            final lastNotificationTime =
-                prefs.getInt('lastNotificationTime') ?? 0;
-            final now = DateTime.now().millisecondsSinceEpoch;
+  service.on('reloadSettings').listen((event) async {
+    print('Reloading settings...');
+    final prefs = await SharedPreferences.getInstance();
+    final selectedInterval = prefs.getInt('checkInterval') ?? 5;
 
-            if (lastNotificationTime == 0 ||
-                now - lastNotificationTime >= selectedInterval * 1000) {
-              flutterLocalNotificationsPlugin.show(
-                0,
-                'Phát hiện người lạ!',
-                'Phát hiện $strangerCount người lạ.',
-                const NotificationDetails(
-                  android: AndroidNotificationDetails(
-                    'high_importance_channel',
-                    'High Importance Notifications',
-                    priority: Priority.high,
-                    importance: Importance.max,
-                    icon: '@mipmap/ic_launcher',
+    Supabase.instance.client.dispose();
+    Supabase.instance.client
+        .channel('access_log_changes')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'access_log',
+          callback: (payload) async {
+            if (payload.newRecord != null &&
+                payload.newRecord!['stranger'] > 0) {
+              final int strangerCount = payload.newRecord!['stranger'] as int;
+              final lastNotificationTime =
+                  prefs.getInt('lastNotificationTime') ?? 0;
+              final now = DateTime.now().millisecondsSinceEpoch;
+
+              if (lastNotificationTime == 0 ||
+                  now - lastNotificationTime >= selectedInterval * 1000) {
+                flutterLocalNotificationsPlugin.show(
+                  0,
+                  'Phát hiện người lạ!',
+                  'Phát hiện $strangerCount người lạ.',
+                  const NotificationDetails(
+                    android: AndroidNotificationDetails(
+                      'high_importance_channel',
+                      'High Importance Notifications',
+                      priority: Priority.high,
+                      importance: Importance.max,
+                      icon: '@mipmap/ic_launcher',
+                    ),
                   ),
-                ),
-              );
-              await prefs.setInt('lastNotificationTime', now);
+                );
+                await prefs.setInt('lastNotificationTime', now);
+              }
             }
-          }
-        },
-      )
-      .subscribe();
+          },
+        )
+        .subscribe();
+  });
+
+  final prefs = await SharedPreferences.getInstance();
+  final selectedInterval = prefs.getInt('checkInterval') ?? 5;
+  if (selectedInterval != 0) {
+    Supabase.instance.client
+        .channel('access_log_changes')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'access_log',
+          callback: (payload) async {
+            if (payload.newRecord != null &&
+                payload.newRecord!['stranger'] > 0) {
+              final int strangerCount = payload.newRecord!['stranger'] as int;
+              final lastNotificationTime =
+                  prefs.getInt('lastNotificationTime') ?? 0;
+              final now = DateTime.now().millisecondsSinceEpoch;
+
+              if (lastNotificationTime == 0 ||
+                  now - lastNotificationTime >= selectedInterval * 1000) {
+                flutterLocalNotificationsPlugin.show(
+                  0,
+                  'Phát hiện người lạ!',
+                  'Phát hiện $strangerCount người lạ.',
+                  const NotificationDetails(
+                    android: AndroidNotificationDetails(
+                      'high_importance_channel',
+                      'High Importance Notifications',
+                      priority: Priority.high,
+                      importance: Importance.max,
+                      icon: '@mipmap/ic_launcher',
+                    ),
+                  ),
+                );
+                await prefs.setInt('lastNotificationTime', now);
+              }
+            }
+          },
+        )
+        .subscribe();
+  }
 }
 
 @pragma('vm:entry-point')
