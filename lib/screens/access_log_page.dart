@@ -26,7 +26,7 @@ class _AccessLogPageState extends State<AccessLogPage> {
         .map((maps) => maps as List<Map<String, dynamic>>)
         .map((data) {
           data = data.where((log) {
-            return log['stranger'] == 0 && log['face_name'] != null && (log['face_name'] as List).isNotEmpty;
+            return log['face_name'] != null && (log['face_name'] as List).isNotEmpty;
           }).toList();
 
           if (_startDate == null || _endDate == null) return data;
