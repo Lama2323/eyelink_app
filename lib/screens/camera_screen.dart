@@ -19,7 +19,6 @@ class _CameraScreenState extends State<CameraScreen> {
   late Future<void> _initializeControllerFuture;
   bool _isProcessing = false;
   double? _currentBrightness;
-  double _exposureOffset = 0.0;
 
   // Kích thước elip 
   double ellipseWidth = 120;
@@ -35,20 +34,7 @@ class _CameraScreenState extends State<CameraScreen> {
     );
 
     _initializeControllerFuture = _controller.initialize().then((_) {
-      _controller.setExposureMode(ExposureMode.auto);
-      _controller.getMaxExposureOffset().then((maxOffset) {
-        if (maxOffset >= 1) {
-          _controller.setExposureOffset(1.0);
-          setState(() {
-            _exposureOffset = 1.0;
-          });
-        } else {
-          _controller.setExposureOffset(maxOffset);
-          setState(() {
-            _exposureOffset = maxOffset;
-          });
-        }
-      });
+      // Không cần cấu hình exposure nữa
     });
   }
 
@@ -102,7 +88,7 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder<void>(
@@ -147,7 +133,7 @@ class _CameraScreenState extends State<CameraScreen> {
                 Align(
                   alignment: Alignment.topCenter,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 80.0), 
+                    padding: const EdgeInsets.only(top: 80.0),
                     child: Text(
                       'Đặt khuôn mặt vào khung elip',
                       style: TextStyle(
@@ -166,17 +152,12 @@ class _CameraScreenState extends State<CameraScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (_exposureOffset != 0.0)
-                          Text(
-                            'Exposure: ${_exposureOffset.toStringAsFixed(1)}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
                         ElevatedButton(
                           onPressed: _isProcessing
                               ? null
                               : () async {
                             File? processedImage =
-                            await _captureAndCropImage();
+                                await _captureAndCropImage();
                             if (processedImage != null) {
                               if (!mounted) return;
                               Navigator.pop(context, processedImage);
@@ -195,14 +176,14 @@ class _CameraScreenState extends State<CameraScreen> {
                           ),
                           child: _isProcessing
                               ? const CircularProgressIndicator(
-                            valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.black),
-                          )
+                                  valueColor:
+                                      AlwaysStoppedAnimation<Color>(Colors.black),
+                                )
                               : const Icon(
-                            Icons.camera_alt,
-                            color: Colors.black,
-                            size: 40,
-                          ),
+                                  Icons.camera_alt,
+                                  color: Colors.black,
+                                  size: 40,
+                                ),
                         ),
                       ],
                     ),
